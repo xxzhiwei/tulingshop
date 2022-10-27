@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aojiaodage.admin.dao.PmsProductAttrDao">
+
+    <select id="selectProductSaleAttrListBySpuId" resultType="com.aojiaodage.admin.vo.ProductSaleAttrWithSkuId">
+        select t2.attr_id id, t2.attr_name name, t2.value, group_concat(distinct t1.id) sku_ids from pms_product_sku t1
+            left join pms_sale_attr t2 on t1.id = t2.sku_id
+        where t1.spu_id = #{id}
+            group by t2.attr_id, t2.attr_name, t2.value;
+    </select>
+</mapper>

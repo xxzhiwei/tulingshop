@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aojiaodage.admin.dao.PmsAttrSpuRelationDao">
+    <select id="selectListBySpuId" resultType="com.aojiaodage.admin.vo.PmsAttrSpuRelationWithGroupId">
+        select t1.id, t1.spu_id, t1.`value`, t1.attr_id, t2.group_id from pms_attr_spu_relation t1
+              join pms_attr t2 on  t2.id = t1.attr_id
+        where spu_id = #{id}
+    </select>
+</mapper>
