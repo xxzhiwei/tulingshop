@@ -130,5 +130,5 @@ public abstract class TokenService<T> {
     }
 
     // 根据id清除缓存
-    public abstract void clear(String id);
+    public abstract long clear(String id);
 }

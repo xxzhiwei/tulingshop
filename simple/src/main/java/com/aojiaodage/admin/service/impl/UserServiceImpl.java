@@ -63,7 +63,10 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     @Override
     public void logout() {
         Integer id = PayloadUtil.get().getId();
-        tokenService.clear(id.toString());
+        long r = tokenService.clear(id.toString());
+        if (r != 1) {
+            throw new CustomException("登出失败");
+        }
     }
 
     @Override

@@ -16,9 +16,9 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,15 +53,24 @@ public class AdminTokenService extends TokenService<User> {
         String accessTokenKey = RedisKeyUtil.getAccessTokenKey(id);
         String payloadKey = RedisKeyUtil.getPayloadKey(id);
 
-        // 使用脚本优化？
-        redisTemplate.opsForValue().set(accessTokenKey, accessToken, JwtUtil.TOKEN_TTL, TimeUnit.MILLISECONDS);
+        // 注意key的先后循序
+        List<String> keys = new ArrayList<>(Arrays.asList(accessTokenKey, payloadKey));
+        List<String> args = new ArrayList<>(Arrays.asList(accessToken, JwtUtil.TOKEN_TTL.toString(), JSON.toJSONString(payload), JwtUtil.TOKEN_TTL.toString()));
 
         if (StringUtils.hasText(refreshToken)) {
             String refreshTokenKey = RedisKeyUtil.getRefreshTokenKey(id);
-            redisTemplate.opsForValue().set(refreshTokenKey, refreshToken, JwtUtil.REFRESH_TOKEN_TTL, TimeUnit.MILLISECONDS);
+            keys.add(refreshTokenKey);
+            args.add(refreshToken);
+            args.add(JwtUtil.REFRESH_TOKEN_TTL.toString());
         }
 
-        redisTemplate.opsForValue().set(payloadKey, JSON.toJSONString(payload), JwtUtil.TOKEN_TTL, TimeUnit.MILLISECONDS);
+        args.add(0, String.valueOf(keys.size()));
+        Object[] objects = args.toArray(new Object[]{});
+        Long r = redisTemplate.execute(RedisScript.of(LuaUtil.luaScript3, Long.class), keys, objects);
+
+        if (r == null || r != 1) {
+            throw new CustomException("缓存令牌信息失败");
+        }
     }
 
     @Override
@@ -92,7 +101,7 @@ public class AdminTokenService extends TokenService<User> {
     }
 
     @Override
-    public void clear(String id) {
+    public long clear(String id) {
         String accessTokenKey = RedisKeyUtil.getAccessTokenKey(id);
         String payloadKey = RedisKeyUtil.getPayloadKey(id);
         String refreshTokenKey = RedisKeyUtil.getRefreshTokenKey(id);
@@ -101,8 +110,9 @@ public class AdminTokenService extends TokenService<User> {
                 RedisScript.of(LuaUtil.luaScript1, Long.class),
                 keys,
                 String.valueOf(keys.size()));
-        if (r == null || r != 1) {
-            throw new CustomException("清除失败");
+        if (r == null) {
+            throw new CustomException("执行lua脚本失败");
         }
+        return r;
     }
 }
