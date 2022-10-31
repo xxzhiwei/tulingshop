@@ -53,7 +53,7 @@ public class PmsProductServiceImpl extends ServiceImpl<PmsProductDao, PmsProduct
         Integer categoryId = query.getCategoryId();
         Integer brandId = query.getBrandId();
         String productSn = query.getProductSn();
-        String keyword = query.getKeyword();
+        String keyword = query.getKeywords();
 
         // 完全不会涉及到多表查询的问题。。
         if (publishStatus != null) {

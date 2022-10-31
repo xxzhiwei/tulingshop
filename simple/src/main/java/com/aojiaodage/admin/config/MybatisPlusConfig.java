@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.aojiaodage.admin.dao")
+@MapperScan(basePackages = {"com.aojiaodage.admin.dao", "com.aojiaodage.common.dao"})
 public class MybatisPlusConfig {
 
     @Bean

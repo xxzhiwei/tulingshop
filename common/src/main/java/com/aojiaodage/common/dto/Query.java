@@ -8,5 +8,5 @@ import lombok.Setter;
 public class Query {
     private long current = 1;
     private long size = 10;
-    private String keyword;
+    private String keywords;
 }

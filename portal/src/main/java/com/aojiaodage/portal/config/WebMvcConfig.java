@@ -35,18 +35,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 this.serverProperties.getError());
     }
 
-    @Bean
-    public JwtAuthentication JwtAuthentication() {
-        return new JwtAuthentication();
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry
-                .addInterceptor(JwtAuthentication())
-                .addPathPatterns("/**")
-                .excludePathPatterns("/user/login", "/user/refresh", "/error");
-    }
+//    @Bean
+//    public JwtAuthentication JwtAuthentication() {
+//        return new JwtAuthentication();
+//    }
+//
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry
+//                .addInterceptor(JwtAuthentication())
+//                .addPathPatterns("/**")
+//                .excludePathPatterns("/user/login", "/user/refresh", "/error");
+//    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

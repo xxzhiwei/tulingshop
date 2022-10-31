@@ -67,7 +67,7 @@ public class PmsProductAttrGroupServiceImpl extends ServiceImpl<PmsProductAttrGr
     @Override
     public Page<PmsAttrGroup> getPagination(Query query) {
         Page<PmsAttrGroup> page = PaginationUtil.getPage(query);
-        String keyword = query.getKeyword();
+        String keyword = query.getKeywords();
 
         LambdaQueryWrapper<PmsAttrGroup> queryWrapper = new LambdaQueryWrapper<>();
 

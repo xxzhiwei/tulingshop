@@ -31,7 +31,7 @@ public class PmsBrandServiceImpl extends ServiceImpl<PmsBrandDao, PmsBrand> impl
     public Page<PmsBrand> getPagination(BrandQuery query) {
 
         Page<PmsBrand> page = PaginationUtil.getPage(query);
-        String keyword = query.getKeyword();
+        String keyword = query.getKeywords();
         String firstLetter = query.getFirstLetter();
 
         LambdaQueryWrapper<PmsBrand> queryWrapper = new LambdaQueryWrapper<>();

@@ -154,7 +154,7 @@ public class PmsProductAttrServiceImpl extends ServiceImpl<PmsProductAttrDao, Pm
     public Page<PmsAttr> getPagination(AttrQuery query) {
         Integer categoryId = query.getCategoryId();
         Integer type2 = query.getType2();
-        String keyword = query.getKeyword();
+        String keyword = query.getKeywords();
 
         LambdaQueryWrapper<PmsAttr> attrLambdaQueryWrapper = new LambdaQueryWrapper<>();
 

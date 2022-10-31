@@ -1,7 +1,6 @@
 package com.aojiaodage.portal.controller;
 
 import com.aojiaodage.common.exception.CustomException;
-import com.aojiaodage.common.exception.NoPermissionException;
 import com.aojiaodage.common.exception.NotLoggedInException;
 import com.aojiaodage.common.util.R;
 import org.springframework.http.HttpStatus;
@@ -66,12 +65,6 @@ public class CustomExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(value = NotLoggedInException.class)
     public R<?> handle(NotLoggedInException ex) {
-        return makeR(ex);
-    }
-
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler(value = NoPermissionException.class)
-    public R<?> handle(NoPermissionException ex) {
         return makeR(ex);
     }
 
