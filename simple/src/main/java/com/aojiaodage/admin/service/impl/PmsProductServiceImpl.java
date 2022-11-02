@@ -284,6 +284,10 @@ public class PmsProductServiceImpl extends ServiceImpl<PmsProductDao, PmsProduct
 
         PmsProduct product = getById(id);
 
+        if (product == null) {
+            throw new CustomException("数据不存在，id：" + id);
+        }
+
         ProductDetail detail = new ProductDetail();
         BeanUtils.copyProperties(product, detail);
 
