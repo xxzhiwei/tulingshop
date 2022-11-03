@@ -42,15 +42,25 @@ public class JwtAuthentication implements HandlerInterceptor {
         catch (Exception exception) {
             exception.printStackTrace();
             R<?> r;
-            if (exception instanceof CustomException) {
+            Integer code;
+            String message;
+            String path = request.getServletPath();
+
+            // 若登出时令牌过期，则直接成功
+            if ("/member/logout".equals(path)) {
+                code = R.ok().getCode();
+                message = R.ok().getMessage();
+            }
+            else if (exception instanceof CustomException) {
                 CustomException ex = (CustomException) exception;
-                r = new R<>(ex.getCode(), ex.getMessage());
+                code = ex.getCode();
+                message = ex.getMessage();
             }
             else {
-                r = R.error();
-                r.setCode(NotLoggedInException.CODE);
-                r.setMessage("令牌已过期，请重新登录");
+                code = NotLoggedInException.CODE;
+                message = "令牌已过期，请重新登录";
             }
+            r = new R<>(code, message);
 
             RespUtil.output(response, JSON.toJSONString(r), HttpStatus.UNAUTHORIZED.value());
             return false;

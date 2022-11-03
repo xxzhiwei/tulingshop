@@ -60,6 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         return tokenService.generate(user);
     }
 
+    // 登出不走校验
     @Override
     public void logout() {
         Integer id = PayloadUtil.get().getId();

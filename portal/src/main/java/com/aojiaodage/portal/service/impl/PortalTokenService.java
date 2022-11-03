@@ -103,6 +103,17 @@ public class PortalTokenService extends TokenService<Member> {
 
     @Override
     public long clear(String id) {
-        return 0;
+        String accessTokenKey = RedisKeyUtil.getAccessTokenKey(id);
+        String payloadKey = RedisKeyUtil.getPayloadKey(id);
+        String refreshTokenKey = RedisKeyUtil.getRefreshTokenKey(id);
+        List<String> keys = Arrays.asList(accessTokenKey, payloadKey, refreshTokenKey);
+        Long r = redisTemplate.execute(
+                RedisScript.of(LuaUtil.luaScript1, Long.class),
+                keys,
+                String.valueOf(keys.size()));
+        if (r == null) {
+            throw new CustomException("执行lua脚本失败");
+        }
+        return r;
     }
 }

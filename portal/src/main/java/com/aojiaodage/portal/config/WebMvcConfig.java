@@ -35,18 +35,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 this.serverProperties.getError());
     }
 
-//    @Bean
-//    public JwtAuthentication JwtAuthentication() {
-//        return new JwtAuthentication();
-//    }
-//
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        registry
-//                .addInterceptor(JwtAuthentication())
-//                .addPathPatterns("/**")
-//                .excludePathPatterns("/user/login", "/user/refresh", "/error");
-//    }
+    @Bean
+    public JwtAuthentication JwtAuthentication() {
+        return new JwtAuthentication();
+    }
+
+    // 大多数不需要登录【除了获取个人信息的接口&下单&支付等外
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry
+                .addInterceptor(JwtAuthentication())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/member/login", "/member/refresh", "/member/register", "/error", "/index/**", "/product/**", "/search/**", "/sku/**");
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

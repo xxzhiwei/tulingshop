@@ -4,19 +4,19 @@
 <mapper namespace="com.aojiaodage.portal.dao.PmsProductAttrGroupDao">
 
     <resultMap id="AttrGroupMap" type="com.aojiaodage.portal.vo.AttrGroup">
-        <result column="id" property="id"/>
-        <result column="name" property="name"/>
+        <result column="group_id" property="id"/>
+        <result column="group_name" property="name"/>
         <collection property="attrs" ofType="com.aojiaodage.portal.entity.PmsAttr">
-            <result column="attr_id" property="id"/>
-            <result column="attr_name" property="name"/>
+            <result column="id" property="id"/>
+            <result column="name" property="name"/>
             <result column="value" property="value"/>
-            <result column="type" property="type"/>
         </collection>
     </resultMap>
     <!-- 相同的查询 -->
     <select id="selectListByCategoryId" resultMap="AttrGroupMap">
-        select t2.id, t2.name, t1.id attr_id, t1.name attr_name, t1.`value`, t1.type from pms_attr t1
-            join pms_product_attr_group t2 on t1.group_id = t2.id
-        where t1.type2 = 1 and t1.category_id = #{id}
+        select t1.attr_id id, t1.value, t2.name, t3.name group_name, t3.id group_id from pms_attr_spu_relation t1
+             left join pms_attr t2 on t2.id = t1.attr_id
+             left join pms_product_attr_group t3 on t2.group_id = t3.id
+        where spu_id = #{id};
     </select>
 </mapper>
