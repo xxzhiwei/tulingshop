@@ -21,7 +21,7 @@ public class PmsAttrSpuSkuRelation implements Serializable {
     private Integer spuId;
     
     private Integer skuId;
-    
+    private String name;
     private String value;
     
     private Integer attrId;

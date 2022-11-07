@@ -43,6 +43,7 @@ public class JwtAuthentication implements HandlerInterceptor {
             exception.printStackTrace();
             R<?> r;
             Integer code;
+            int status = HttpStatus.UNAUTHORIZED.value();
             String message;
             String path = request.getServletPath();
 
@@ -50,6 +51,7 @@ public class JwtAuthentication implements HandlerInterceptor {
             if ("/member/logout".equals(path)) {
                 code = R.ok().getCode();
                 message = R.ok().getMessage();
+                status = HttpStatus.OK.value();
             }
             else if (exception instanceof CustomException) {
                 CustomException ex = (CustomException) exception;
@@ -62,7 +64,7 @@ public class JwtAuthentication implements HandlerInterceptor {
             }
             r = new R<>(code, message);
 
-            RespUtil.output(response, JSON.toJSONString(r), HttpStatus.UNAUTHORIZED.value());
+            RespUtil.output(response, JSON.toJSONString(r), status);
             return false;
         }
         return true;

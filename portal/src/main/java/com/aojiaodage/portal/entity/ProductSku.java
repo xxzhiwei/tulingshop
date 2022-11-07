@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * (ProductSku)实体类
@@ -24,7 +25,7 @@ public class ProductSku implements Serializable {
     
     private String name;
     
-    private Double price;
+    private BigDecimal price;
     
     private Integer sales;
     

@@ -19,7 +19,7 @@ public class PmsAttrSpuRelation implements Serializable {
     private Integer id;
     
     private Integer spuId;
-    
+    private String name;
     private String value;
     
     private Integer attrId;

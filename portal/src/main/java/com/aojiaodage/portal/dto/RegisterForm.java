@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.util.Date;
 
 @Getter
@@ -15,8 +16,8 @@ public class RegisterForm {
     private String password;
     private String nickname;
     @NotBlank(message = "phone不能为空")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String phone;
-    private String avatar;
     private Integer gender;
     private Date birthday;
 }

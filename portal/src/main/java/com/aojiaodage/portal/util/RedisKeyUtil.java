@@ -15,4 +15,8 @@ public class RedisKeyUtil {
     public static String getPayloadKey(String id) {
         return RedisKey.PORTAL + id;
     }
+
+    public static String getCartKey(Integer id) {
+        return RedisKey.PORTAL_CART + id;
+    }
 }

@@ -12,4 +12,6 @@ public interface MemberService extends IService<Member> {
     void logout();
     TokenDetail<Member> refresh(RefreshForm form);
     void register(RegisterForm form);
+
+    // Member getDetail(Integer id);
 }

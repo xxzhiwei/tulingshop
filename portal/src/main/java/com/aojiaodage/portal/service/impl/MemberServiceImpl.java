@@ -40,6 +40,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, Member> implements
             throw new WrongUsernameOrPwdException();
         }
 
+        member.setPassword(null);
         return tokenService.generate(member);
     }
 
@@ -77,28 +78,26 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, Member> implements
                 .eq(Member::getPhone, phone);
         Member existed = getOne(memberLambdaQueryWrapper);
 
-        if (username.equals(existed.getUsername())) {
-            throw new CustomException("用户名已经存在");
-        }
-        if (phone.equals(existed.getPhone())) {
-            throw new CustomException("手机号已经存在");
+        if (existed != null) {
+            if (username.equals(existed.getUsername())) {
+                throw new CustomException("用户名已经存在");
+            }
+            if (phone.equals(existed.getPhone())) {
+                throw new CustomException("手机号已经存在");
+            }
         }
 
         form.setPassword(Md5Util.encode(form.getPassword()));
         Member member = new Member();
 
-        BeanUtils.copyProperties(member, form);
+        BeanUtils.copyProperties(form, member);
         if (!StringUtils.hasText(member.getNickname())) {
             member.setNickname(member.getUsername());
         }
         member.setStatus(1);
         member.setCreateTime(new Date());
         member.setSourceType(1);
-        String avatar = form.getAvatar();
-
-        if (!StringUtils.hasText(avatar)) {
-            member.setIcon(avatar);
-        }
+        member.setMemberLevelId(1);
 
         save(member);
     }
