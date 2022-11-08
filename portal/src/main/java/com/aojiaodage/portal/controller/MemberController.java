@@ -3,6 +3,7 @@ package com.aojiaodage.portal.controller;
 import com.aojiaodage.common.pojo.TokenDetail;
 import com.aojiaodage.common.util.R;
 import com.aojiaodage.portal.dto.LoginForm;
+import com.aojiaodage.portal.dto.RefreshForm;
 import com.aojiaodage.portal.dto.RegisterForm;
 import com.aojiaodage.portal.entity.Member;
 import com.aojiaodage.portal.service.MemberService;
@@ -30,6 +31,12 @@ public class MemberController {
     public R<?> logout() {
         memberService.logout();
         return R.ok();
+    }
+
+    @PostMapping("/refresh")
+    public R<?> refresh(@Validated @RequestBody RefreshForm form) {
+        TokenDetail<Member> tokenDetail = memberService.refresh(form);
+        return R.ok(tokenDetail);
     }
 
     @PostMapping("/register")

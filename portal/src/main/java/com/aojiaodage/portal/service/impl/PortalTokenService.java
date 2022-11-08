@@ -84,9 +84,9 @@ public class PortalTokenService extends TokenService<Member> {
     @Override
     public List<String> getAccessTokenAndPayload(Claims claims) {
         String id = getId(claims);
-        String refreshTokenKey = RedisKeyUtil.getAccessTokenKey(id);
+        String accessTokenKey = RedisKeyUtil.getAccessTokenKey(id);
         String payloadKey = RedisKeyUtil.getPayloadKey(id);
-        List<String> keys = Arrays.asList(refreshTokenKey, payloadKey);
+        List<String> keys = Arrays.asList(accessTokenKey, payloadKey);
         List<?> r = redisTemplate.execute(RedisScript.of(LuaUtil.luaScript2, List.class), keys, String.valueOf(keys.size()));
 
         if (r == null) {

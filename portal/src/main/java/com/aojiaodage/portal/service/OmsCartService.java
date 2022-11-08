@@ -1,16 +1,19 @@
 package com.aojiaodage.portal.service;
 
+import com.aojiaodage.portal.dto.CartItemForm;
 import com.aojiaodage.portal.entity.Cart;
 
 public interface OmsCartService {
-    // 保存商品
-    void save(Integer skuId, Integer count);
     // 获取购物车
     Cart get();
-    // 删除商品
-    void del(Integer skuId);
     // 清空购物车
     void clear();
-    // 修改数量
-    void updateCount(Integer skuId, Integer count);
+    // 将商品加入购物车
+    void add(CartItemForm form);
+
+    // 从购物车中移除商品
+    void remove(CartItemForm form);
+
+    // 修改购物车商品数量
+    void updateCount(CartItemForm form);
 }

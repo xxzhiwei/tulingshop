@@ -1,21 +1,9 @@
 package com.aojiaodage.portal.entity;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class Cart {
     private List<CartItem> items;
-
-    public BigDecimal getAmount() {
-        BigDecimal amount = new BigDecimal("0");
-
-        if (items != null && items.size() > 0) {
-            for (CartItem item : items) {
-                amount = amount.add(item.getAmount());
-            }
-        }
-        return amount;
-    }
 
     public List<CartItem> getItems() {
         return items;

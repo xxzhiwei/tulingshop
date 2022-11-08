@@ -8,12 +8,9 @@ public class CartItem {
     private String title;
     private BigDecimal price;
     private Integer count;
+    private Long stock;
 
     private List<String> attrs; // 用于前端展示
-
-    public BigDecimal getAmount() {
-        return price.multiply(new BigDecimal(count));
-    }
 
     public Integer getSkuId() {
         return skuId;
@@ -53,5 +50,13 @@ public class CartItem {
 
     public void setAttrs(List<String> attrs) {
         this.attrs = attrs;
+    }
+
+    public Long getStock() {
+        return stock;
+    }
+
+    public void setStock(Long stock) {
+        this.stock = stock;
     }
 }
