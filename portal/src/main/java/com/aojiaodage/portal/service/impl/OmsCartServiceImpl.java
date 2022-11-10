@@ -27,7 +27,7 @@ public class OmsCartServiceImpl implements OmsCartService {
     @Autowired
     PmsProductSkuService pmsProductSkuService;
 
-    private BoundHashOperations<String, String, String> getCartHash() {
+    public BoundHashOperations<String, String, String> getCartHash() {
         Member member = PayloadUtil.get();
         String cartKey = RedisKeyUtil.getCartKey(member.getId());
         return redisTemplate.boundHashOps(cartKey);
@@ -61,7 +61,6 @@ public class OmsCartServiceImpl implements OmsCartService {
         Integer skuId = form.getSkuId();
         Integer count = form.getCount();
 
-        ProductSku sku = pmsProductSkuService.getDetail(skuId);
         BoundHashOperations<String, String, String> cartHash = getCartHash();
         String json = null;
         CartItem cartItem;
@@ -71,15 +70,15 @@ public class OmsCartServiceImpl implements OmsCartService {
             cartItem.setCount(cartItem.getCount() + count);
         }
         else {
+            ProductSku sku = pmsProductSkuService.getDetail(skuId);
             cartItem = new CartItem();
             cartItem.setSkuId(skuId);
             cartItem.setCount(count);
             cartItem.setTitle(sku.getName());
             cartItem.setPrice(sku.getPrice());
+            cartItem.setStock(sku.getStock()); // 会有延迟
         }
 
-        // 更新库存
-        cartItem.setStock(sku.getStock());
         cartHash.put(skuId.toString(), JSON.toJSONString(cartItem));
     }
 
@@ -87,7 +86,12 @@ public class OmsCartServiceImpl implements OmsCartService {
     public void remove(CartItemForm form) {
         Integer skuId = form.getSkuId();
         BoundHashOperations<String, String, String> cartHash = getCartHash();
-        cartHash.delete(skuId);
+        cartHash.delete(skuId.toString());
+    }
+
+    private CartItem getCartItem(Integer skuId, BoundHashOperations<String, String, String> cartHash) {
+        String json = cartHash.get(skuId.toString());
+        return JSON.parseObject(json, CartItem.class);
     }
 
     @Override
@@ -95,12 +99,9 @@ public class OmsCartServiceImpl implements OmsCartService {
 
         Integer skuId = form.getSkuId();
         Integer count = form.getCount();
+
         BoundHashOperations<String, String, String> cartHash = getCartHash();
-        String json = cartHash.get(skuId);
-
-        CartItem cartItem = JSON.parseObject(json, CartItem.class);
-
-        assert cartItem != null;
+        CartItem cartItem = getCartItem(skuId, cartHash);
         cartItem.setCount(count);
 
         cartHash.put(skuId.toString(), JSON.toJSONString(cartItem));

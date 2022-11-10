@@ -12,6 +12,10 @@ public class CartItem {
 
     private List<String> attrs; // 用于前端展示
 
+    public BigDecimal getAmount() {
+        return price.multiply(new BigDecimal(count));
+    }
+
     public Integer getSkuId() {
         return skuId;
     }
