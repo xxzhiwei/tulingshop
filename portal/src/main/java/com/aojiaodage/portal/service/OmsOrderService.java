@@ -12,4 +12,5 @@ public interface OmsOrderService extends IService<OmsOrder> {
 
     // 创建订单
     void create(OrderForm form);
+    OmsOrder getDetail(Integer id);
 }

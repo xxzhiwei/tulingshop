@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 订单中所包含的商品(OmsOrderItem)实体类
@@ -38,7 +39,7 @@ public class OmsOrderItem implements Serializable {
     /**
      * 销售价格
      */
-    private Double productPrice;
+    private BigDecimal productPrice;
     /**
      * 购买数量
      */

@@ -3,6 +3,8 @@ package com.aojiaodage.portal.service;
 import com.aojiaodage.portal.dto.CartItemForm;
 import com.aojiaodage.portal.entity.Cart;
 
+import java.util.List;
+
 public interface OmsCartService {
     // 获取购物车
     Cart get();
@@ -16,4 +18,6 @@ public interface OmsCartService {
 
     // 修改购物车商品数量
     void updateCount(CartItemForm form);
+
+    void remove(List<Integer> skuIds);
 }

@@ -1,11 +1,13 @@
 package com.aojiaodage.portal.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 订单表(OmsOrder)实体类
@@ -190,6 +192,7 @@ public class OmsOrder implements Serializable {
      */
     private Date modifyTime;
 
-
+    @TableField(exist = false)
+    List<OmsOrderItem> items;
 }
 

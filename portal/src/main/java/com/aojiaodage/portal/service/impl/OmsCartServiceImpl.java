@@ -106,4 +106,13 @@ public class OmsCartServiceImpl implements OmsCartService {
 
         cartHash.put(skuId.toString(), JSON.toJSONString(cartItem));
     }
+
+    @Override
+    public void remove(List<Integer> skuIds) {
+        BoundHashOperations<String, String, String> cartHash = getCartHash();
+        Object[] keys = skuIds
+                .stream()
+                .map(Object::toString).toArray();
+        cartHash.delete(keys);
+    }
 }
