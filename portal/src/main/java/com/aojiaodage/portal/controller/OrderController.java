@@ -3,9 +3,11 @@ package com.aojiaodage.portal.controller;
 import com.aojiaodage.common.util.R;
 import com.aojiaodage.portal.dto.ConfirmForm;
 import com.aojiaodage.portal.dto.OrderForm;
+import com.aojiaodage.portal.dto.OrderQuery;
 import com.aojiaodage.portal.entity.OmsOrder;
 import com.aojiaodage.portal.service.OmsOrderService;
 import com.aojiaodage.portal.vo.OrderConfirmation;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +28,19 @@ public class OrderController {
 
     @PostMapping("/create")
     public R<?> create(@Valid @RequestBody OrderForm form) {
-        orderService.create(form);
-        return R.ok();
+        String orderSn = orderService.create(form);
+        return R.ok(orderSn);
     }
 
-    @GetMapping("/detail/{id}")
-    public R<?> getDetail(@PathVariable Integer id) {
-        OmsOrder detail = orderService.getDetail(id);
+    @GetMapping("/pagination")
+    public R<?> getPagination(OrderQuery query) {
+        Page<OmsOrder> pagination = orderService.getPagination(query);
+        return R.ok(pagination);
+    }
+
+    @GetMapping("/detail")
+    public R<?> getDetail(@RequestParam String orderSn) {
+        OmsOrder detail = orderService.getByOrderSn(orderSn);
         return R.ok(detail);
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aojiaodage.portal.dao.OmsOrderItemDao">
+    <select id="selectByOrderId" resultType="com.aojiaodage.portal.entity.OmsOrderItem">
+        select id, order_id, order_sn, product_id, product_pic, product_name, product_brand, product_sn, product_price, product_quantity, product_sku_id, product_category_id, real_amount from oms_order_item where order_id = #{id}
+    </select>
+</mapper>

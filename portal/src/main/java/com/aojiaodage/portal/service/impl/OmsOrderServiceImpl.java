@@ -1,10 +1,12 @@
 package com.aojiaodage.portal.service.impl;
 
 import com.aojiaodage.common.exception.CustomException;
+import com.aojiaodage.common.util.PaginationUtil;
 import com.aojiaodage.portal.dao.OmsOrderDao;
 import com.aojiaodage.portal.dto.ConfirmForm;
 import com.aojiaodage.portal.dto.DeliveryForm;
 import com.aojiaodage.portal.dto.OrderForm;
+import com.aojiaodage.portal.dto.OrderQuery;
 import com.aojiaodage.portal.entity.*;
 import com.aojiaodage.portal.service.OmsCartService;
 import com.aojiaodage.portal.service.OmsOrderItemService;
@@ -13,6 +15,7 @@ import com.aojiaodage.portal.service.PmsProductSkuService;
 import com.aojiaodage.portal.util.PayloadUtil;
 import com.aojiaodage.portal.vo.OrderConfirmation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,9 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
 
     @Autowired
     OmsCartService cartService;
+
+    @Autowired
+    PmsProductSkuService skuService;
 
     @Override
     public OrderConfirmation confirm(ConfirmForm form) {
@@ -63,7 +69,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
 
     @Transactional
     @Override
-    public void create(OrderForm form) {
+    public String create(OrderForm form) {
         OmsOrder order = new OmsOrder();
         List<Integer> skuIds = form.getSkuIds();
 
@@ -82,16 +88,20 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
         // 再检查skuId是否都存在数据库中
         List<ProductSku> skus = pmsProductSkuService.listByIds(skuIds);
         if (skus.size() != skuIds.size()) {
-            throw new CustomException("skuId与数据库不同步");
+            throw new CustomException("sku与数据库不同步");
         }
 
         // 检查库存
-        checked.sort((Comparator.comparingInt(CartItem::getSkuId)));
-        skus.sort((Comparator.comparingInt(ProductSku::getId)));
+        checked.sort(Comparator.comparingInt(CartItem::getSkuId));
+        skus.sort(Comparator.comparingInt(ProductSku::getId));
 
         for (int i=0; i<skus.size(); i++) {
             ProductSku sku = skus.get(i);
             CartItem cartItem = checked.get(i);
+            // 同步价格
+            if (!cartItem.getPrice().equals(sku.getPrice())) {
+                cartItem.setPrice(sku.getPrice());
+            }
 
             if (sku.getStock() < cartItem.getCount()) {
                 throw new CustomException(sku.getName() + "库存不足，剩余量", 20000); // 此时，前端应该根据错误提示用户后，重新获取sku库存
@@ -107,13 +117,14 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
         String dateStr = simpleDateFormat.format(date);
         order.setOrderSn(dateStr + System.currentTimeMillis());
         order.setCreateTime(date);
+        order.setModifyTime(date);
         order.setPayType(0); // 未选择支付方式
         order.setSourceType(0);
         order.setStatus(0); // 未支付状态
         order.setOrderType(0);
 
         // 订单金额
-        BigDecimal amount = Cart.getSkuAmount(skus);
+        BigDecimal amount = Cart.getAmount(checked);
         order.setTotalAmount(amount);
         order.setPayAmount(amount);
         order.setFreightAmount(new BigDecimal("10"));
@@ -144,24 +155,90 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
             orderItem.setProductSkuId(sku.getId());
             orderItem.setProductQuantity(cartItem.getCount());
 
+            // 锁定库存
+            sku.setStockLocked(sku.getStockLocked() + orderItem.getProductQuantity());
+            sku.setStock(sku.getStock() - orderItem.getProductQuantity());
+
             orderItems.add(orderItem);
         }
 
         cartService.remove(skuIds);
         orderItemService.saveBatch(orderItems);
+        skuService.updateBatchById(skus);
+        return order.getOrderSn();
     }
 
     @Override
-    public OmsOrder getDetail(Integer id) {
-        OmsOrder order = getById(id);
+    public OmsOrder getByOrderSn(String orderSn) {
+
+        LambdaQueryWrapper<OmsOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        orderLambdaQueryWrapper.eq(OmsOrder::getOrderSn, orderSn);
+        OmsOrder order = getOne(orderLambdaQueryWrapper);
 
         if (order == null) {
             throw new CustomException("数据不存在");
         }
+
         LambdaQueryWrapper<OmsOrderItem> orderItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        orderItemLambdaQueryWrapper.eq(OmsOrderItem::getOrderId, id);
+        orderItemLambdaQueryWrapper.eq(OmsOrderItem::getOrderId, order.getId());
         List<OmsOrderItem> orderItems = orderItemService.list(orderItemLambdaQueryWrapper);
         order.setItems(orderItems);
         return order;
+    }
+
+    @Transactional
+    @Override
+    public List<OmsOrder> cancelByTask() {
+        List<OmsOrder> orders = baseMapper.selectOutOfDate();
+        if (orders.size() > 0) {
+            List<Integer> orderIds = new ArrayList<>();
+            for (OmsOrder order : orders) {
+                order.setStatus(4);
+                order.setModifyTime(new Date());
+                orderIds.add(order.getId());
+            }
+
+            // 更新订单状态
+            updateBatchById(orders);
+
+            // 归还库存
+            LambdaQueryWrapper<OmsOrderItem> orderItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderItemLambdaQueryWrapper.in(OmsOrderItem::getOrderId, orderIds);
+            List<OmsOrderItem> orderItems = orderItemService.list(orderItemLambdaQueryWrapper);
+
+            List<Integer> skuIds = orderItems.stream().map(OmsOrderItem::getProductSkuId).collect(Collectors.toList());
+            List<ProductSku> skus = skuService.listByIds(skuIds);
+
+            // 正常情况下，skus与orderItems一一对应
+            skus.sort(Comparator.comparingInt(ProductSku::getId));
+            orderItems.sort(Comparator.comparingInt(OmsOrderItem::getProductSkuId));
+
+            for (int i=0; i<skus.size(); i++) {
+                ProductSku sku = skus.get(i);
+                OmsOrderItem orderItem = orderItems.get(i);
+                sku.setStock(sku.getStock() + orderItem.getProductQuantity());
+                sku.setStockLocked(sku.getStockLocked() - orderItem.getProductQuantity());
+            }
+
+            skuService.updateBatchById(skus);
+        }
+        return orders;
+    }
+
+    @Override
+    public Page<OmsOrder> getPagination(OrderQuery query) {
+        PaginationUtil.setPaginationIfNecessary(query);
+        long current = query.getCurrent();
+        long size = query.getSize();
+        long count = count();
+        Page<OmsOrder> page = new Page<>(current, size, count);
+
+        if (count > 0) {
+            Long offset = PaginationUtil.getPaginationOffset(current, size);
+            Integer memberId = PayloadUtil.get().getId();
+            List<OmsOrder> orders = baseMapper.selectPagination(offset, size, memberId);
+            page.setRecords(orders);
+        }
+        return page;
     }
 }

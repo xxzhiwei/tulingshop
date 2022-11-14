@@ -6,17 +6,6 @@ import java.util.List;
 public class Cart {
     private List<CartItem> items;
 
-    // 这里的sku都是能从购物车中对应的
-    public static BigDecimal getSkuAmount(List<ProductSku> skus) {
-        BigDecimal amount = new BigDecimal("0");
-        if (skus.size() > 0) {
-            for (ProductSku item : skus) {
-                amount = amount.add(item.getPrice());
-            }
-        }
-        return amount;
-    }
-
     public BigDecimal getAmount() {
         return getAmount(items);
     }
