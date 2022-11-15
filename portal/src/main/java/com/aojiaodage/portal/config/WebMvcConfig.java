@@ -46,7 +46,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry
                 .addInterceptor(JwtAuthentication())
                 .addPathPatterns("/**")
-                .excludePathPatterns("/member/login", "/member/refresh", "/member/register", "/error", "/index/**", "/product/**", "/search/**", "/sku/**");
+                .excludePathPatterns("/member/login", "/member/refresh",
+                        "/member/register", "/error", "/index/**",
+                        "/product/**", "/search/**", "/sku/**", "/payment/alipay/notify");
     }
 
     @Override

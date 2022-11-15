@@ -3,7 +3,7 @@
 
 <mapper namespace="com.aojiaodage.portal.dao.OmsOrderDao">
     <select id="selectOutOfDate" resultType="com.aojiaodage.portal.entity.OmsOrder">
-        select * from oms_order where now() > date_add(create_time, interval 2 hour) and status = 0
+        select * from oms_order where now() > date_add(create_time, interval 1 hour) and status = 0
     </select>
 
     <resultMap id="orderMap" type="com.aojiaodage.portal.entity.OmsOrder">

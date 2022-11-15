@@ -19,8 +19,8 @@ public class ScheduleTaskConfig {
     @Autowired
     OmsOrderService orderService;
 
-    // 这里会有延迟问题，但影响不大；
-    //@Scheduled(cron = "* 0/30 * * * ?")
+    // 这里会有延迟问题【每隔30分钟】，但影响不大；
+    @Scheduled(cron = "0 0/30 * * * ?")
     public void cancelOrder() {
         log.info("执行定时取消订单任务...");
         List<OmsOrder> orders = orderService.cancelByTask();

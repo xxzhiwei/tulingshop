@@ -40,7 +40,13 @@ public class OrderController {
 
     @GetMapping("/detail")
     public R<?> getDetail(@RequestParam String orderSn) {
-        OmsOrder detail = orderService.getByOrderSn(orderSn);
-        return R.ok(detail);
+        OmsOrder order = orderService.getByOrderSn(orderSn);
+        return R.ok(order);
+    }
+
+    @GetMapping("/brief")
+    public R<?> getBrief(@RequestParam String orderSn) {
+        OmsOrder order = orderService.getByOrderSn(orderSn, false);
+        return R.ok(order);
     }
 }

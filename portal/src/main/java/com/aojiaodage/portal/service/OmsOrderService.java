@@ -4,6 +4,7 @@ import com.aojiaodage.portal.dto.ConfirmForm;
 import com.aojiaodage.portal.dto.OrderForm;
 import com.aojiaodage.portal.dto.OrderQuery;
 import com.aojiaodage.portal.entity.OmsOrder;
+import com.aojiaodage.portal.interfaces.StockHandler;
 import com.aojiaodage.portal.vo.OrderConfirmation;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -22,4 +23,9 @@ public interface OmsOrderService extends IService<OmsOrder> {
     List<OmsOrder> cancelByTask();
 
     Page<OmsOrder> getPagination(OrderQuery query);
+
+    // 更新库存
+    void updateStockByOrderSn(String orderSn, StockHandler handler);
+
+    OmsOrder getByOrderSn(String orderSn, boolean includingItems);
 }

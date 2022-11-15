@@ -8,6 +8,7 @@ import com.aojiaodage.portal.dto.DeliveryForm;
 import com.aojiaodage.portal.dto.OrderForm;
 import com.aojiaodage.portal.dto.OrderQuery;
 import com.aojiaodage.portal.entity.*;
+import com.aojiaodage.portal.interfaces.StockHandler;
 import com.aojiaodage.portal.service.OmsCartService;
 import com.aojiaodage.portal.service.OmsOrderItemService;
 import com.aojiaodage.portal.service.OmsOrderService;
@@ -43,6 +44,18 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
 
     @Autowired
     PmsProductSkuService skuService;
+
+    // 减库存【适用于「支付后，订单过期」的情况】
+    StockHandler stockHandler = (sku, orderItem) -> {
+        if (sku.getStock() < orderItem.getProductQuantity()) {
+            throw new CustomException("库存不足，skuId：" + sku.getId());
+        }
+
+        sku.setStock(sku.getStock() - orderItem.getProductQuantity());
+    };
+
+    // 减锁定库存【正常支付情况
+    StockHandler stockLockedHandler = (sku, orderItem) -> sku.setStockLocked(sku.getStockLocked() - orderItem.getProductQuantity());
 
     @Override
     public OrderConfirmation confirm(ConfirmForm form) {
@@ -169,8 +182,7 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
     }
 
     @Override
-    public OmsOrder getByOrderSn(String orderSn) {
-
+    public OmsOrder getByOrderSn(String orderSn, boolean includingItems) {
         LambdaQueryWrapper<OmsOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
         orderLambdaQueryWrapper.eq(OmsOrder::getOrderSn, orderSn);
         OmsOrder order = getOne(orderLambdaQueryWrapper);
@@ -179,11 +191,18 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
             throw new CustomException("数据不存在");
         }
 
-        LambdaQueryWrapper<OmsOrderItem> orderItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        orderItemLambdaQueryWrapper.eq(OmsOrderItem::getOrderId, order.getId());
-        List<OmsOrderItem> orderItems = orderItemService.list(orderItemLambdaQueryWrapper);
-        order.setItems(orderItems);
+        if (includingItems) {
+            LambdaQueryWrapper<OmsOrderItem> orderItemLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            orderItemLambdaQueryWrapper.eq(OmsOrderItem::getOrderId, order.getId());
+            List<OmsOrderItem> orderItems = orderItemService.list(orderItemLambdaQueryWrapper);
+            order.setItems(orderItems);
+        }
         return order;
+    }
+
+    @Override
+    public OmsOrder getByOrderSn(String orderSn) {
+        return getByOrderSn(orderSn, true);
     }
 
     @Transactional
@@ -240,5 +259,25 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
             page.setRecords(orders);
         }
         return page;
+    }
+
+    @Override
+    public void updateStockByOrderSn(String orderSn, StockHandler handler) {
+        OmsOrder order = getByOrderSn(orderSn);
+
+        List<OmsOrderItem> items = order.getItems();
+        List<Integer> skuIds = items.stream().map(OmsOrderItem::getProductSkuId).collect(Collectors.toList());
+        List<ProductSku> skus = skuService.listByIds(skuIds);
+
+        items.sort(Comparator.comparingInt(OmsOrderItem::getProductSkuId));
+        skus.sort(Comparator.comparingInt(ProductSku::getId));
+
+        for (int i=0; i<skus.size(); i++) {
+            ProductSku sku = skus.get(i);
+            OmsOrderItem orderItem = items.get(i);
+            handler.handle(sku, orderItem);
+        }
+
+        skuService.updateBatchById(skus);
     }
 }
