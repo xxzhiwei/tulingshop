@@ -150,9 +150,10 @@ public class PaymentService {
                 }
 
                 // 更新订单状态
-                order.setStatus(3);
+                order.setStatus(1);
                 order.setPayType(1);
                 order.setPaymentTime(date);
+                order.setPayAmount(form.getTotalAmount());
 
                 orderService.updateById(order);
             }

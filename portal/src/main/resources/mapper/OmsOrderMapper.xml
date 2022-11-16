@@ -10,11 +10,40 @@
         <collection property="items" column="id" select="com.aojiaodage.portal.dao.OmsOrderItemDao.selectByOrderId" />
     </resultMap>
 
+    <sql id="orderQuery">
+        <where>
+            member_id = #{memberId} and status != 5
+            <if test="query.min != null">
+                and total_amount >= #{query.min}
+            </if>
+            <if test="query.max != null">
+                and total_amount &lt;= #{query.max}
+            </if>
+            <if test="query.start != null">
+                and create_time >= #{query.start}
+            </if>
+            <if test="query.end != null">
+                and create_time &lt;= #{query.end}
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+            <if test="query.keywords != null and query.keywords != ''">
+                and order_sn like concat('%', #{query.keywords}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectCount" resultType="int">
+        select count(*) from oms_order
+        <include refid="orderQuery" />
+    </select>
+
     <select id="selectPagination" resultMap="orderMap">
         select
             id, member_id, order_sn, create_time, member_username, total_amount, pay_amount, freight_amount, pay_type, source_type, status, order_type, delivery_company, delivery_sn, auto_confirm_day, receiver_name, receiver_phone, receiver_post_code, receiver_province, receiver_city, receiver_region, receiver_detail_address, note, confirm_status, payment_time, delivery_time, receive_time, comment_time, modify_time
-        from oms_order t1
-        where member_id = #{memberId} and status != 5
+        from oms_order
+        <include refid="orderQuery" />
         limit #{offset}, #{size}
     </select>
 </mapper>

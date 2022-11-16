@@ -139,7 +139,6 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
         // 订单金额
         BigDecimal amount = Cart.getAmount(checked);
         order.setTotalAmount(amount);
-        order.setPayAmount(amount);
         order.setFreightAmount(new BigDecimal("10"));
 
         // 收货人信息
@@ -247,15 +246,16 @@ public class OmsOrderServiceImpl extends ServiceImpl<OmsOrderDao, OmsOrder> impl
     @Override
     public Page<OmsOrder> getPagination(OrderQuery query) {
         PaginationUtil.setPaginationIfNecessary(query);
+
+        Integer memberId = PayloadUtil.get().getId();
         long current = query.getCurrent();
         long size = query.getSize();
-        long count = count();
+        long count = baseMapper.selectCount(memberId, query);
         Page<OmsOrder> page = new Page<>(current, size, count);
 
         if (count > 0) {
             Long offset = PaginationUtil.getPaginationOffset(current, size);
-            Integer memberId = PayloadUtil.get().getId();
-            List<OmsOrder> orders = baseMapper.selectPagination(offset, size, memberId);
+            List<OmsOrder> orders = baseMapper.selectPagination(offset, size, memberId, query);
             page.setRecords(orders);
         }
         return page;
