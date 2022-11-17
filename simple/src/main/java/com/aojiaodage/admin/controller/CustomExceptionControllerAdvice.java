@@ -4,6 +4,7 @@ import com.aojiaodage.common.exception.CustomException;
 import com.aojiaodage.common.exception.NoPermissionException;
 import com.aojiaodage.common.exception.NotLoggedInException;
 import com.aojiaodage.common.util.R;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -17,11 +18,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class CustomExceptionControllerAdvice {
 
     private R<?> makeR(CustomException exception) {
-        exception.printStackTrace();
+        log.error(exception.getMessage(), exception);
         R<?> r = R.error();
         r.setCode(exception.getCode());
         r.setMessage(exception.getMessage());
@@ -39,6 +41,7 @@ public class CustomExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public R<?> handler(HttpRequestMethodNotSupportedException exception) {
+        log.error(exception.getMessage(), exception);
         R<?> r = R.error();
         r.setCode(40501);
         r.setMessage("不支持的请求方法：" + exception.getMessage());
@@ -48,6 +51,7 @@ public class CustomExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
     public R<?> handler(BindException exception) {
+        log.error(exception.getMessage(), exception);
         R<?> r = R.error();
         r.setCode(40002);
         r.setMessage("请求参数绑定失败：" + getBindingErrorMsgMap(exception.getBindingResult()));
@@ -57,6 +61,7 @@ public class CustomExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public R<?> handler(MethodArgumentNotValidException exception) {
+        log.error(exception.getMessage(), exception);
         R<?> r = R.error();
         r.setCode(40003);
         r.setMessage("请求参数校验失败：" + getBindingErrorMsgMap(exception.getBindingResult()));
