@@ -40,6 +40,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, Member> implements
             throw new WrongUsernameOrPwdException();
         }
 
+        if (member.getStatus() == 0) {
+            throw new CustomException("该账号已经被禁用，请联系客服询问原因");
+        }
+
         member.setPassword(null);
         return tokenService.generate(member);
     }
